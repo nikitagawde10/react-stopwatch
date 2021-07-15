@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import './App.css'
-
+import './Fonts/MyFont-UltraLight.otf'
 function getFormattedTime(passedTimeInMilliseconds) {
   const totalSeconds = passedTimeInMilliseconds / 1000;
   const [minutes, seconds, centiSeconds] = [
@@ -13,30 +13,20 @@ function getFormattedTime(passedTimeInMilliseconds) {
 }
 
 let startTime = 0
-let stopTime = 0
-let totalTime = 0
-let intervalID
 let totalLapTime = 0
 const START_TEXT = "Start";
 const RESET_TEXT = "Reset";
 const STOP_TEXT = "Stop";
 const LAP_TEXT = "Lap";
 
-let lapStateObj = {
-  lapIndex: 0,
-  timeStamp: undefined
-};
-
 function App() {
-  //pass multiple objects in hooks- research
-  const [isActive, setIsActive] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0)
-  const [lapState, setLapState] = useState([])
+  const [isRunning, setIsRunning] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [laps, setLaps] = useState([])
   const [totalLapDuration, setTotalLapDuration] = useState(0)
   const [minLap, setMinLap] = useState({
     lapIndex: 0,
     timeStamp: Number.MAX_VALUE
-
   })
   const [maxLap, setMaxLap] = useState({
     lapIndex: 0,
@@ -45,138 +35,117 @@ function App() {
   //everytime isActive (state/ property) changes it's going to call whatever is written in useEffect
 
   useEffect(() => {
-    if (isActive) {
-      startTime = Date.now()
-      startTimer()
-      console.log("this is start time " + startTime)
-      const intervalID = setInterval(() => setCurrentTime((Date.now() - startTime), 50))
-      console.log("this is current time " + currentTime)
-      return () => clearInterval(intervalID)
+    if (isRunning) {
+      startTimer();
+      const intervalID = setInterval(() =>
+        setElapsedTime(Date.now() - startTime + elapsedTime, 50)
+      );
+      return () => clearInterval(intervalID);
     }
-    else {
-      stopTimer()
-    }
-  }, [isActive]);
+  }, [isRunning]);
 
   useEffect(() => {
-    if (currentTime > 0 && isActive) {
-      setTotalLapDuration(totalLapDuration + currentTime)
-      const currentLap = laps[0] //?? { lapIndex: 1 }
-      const updatedLap = { ...currentLap, timeStamp: currentTime - totalLapTime }
-      setLapState([
+    if (elapsedTime > 0 && isRunning) {
+      setTotalLapDuration(totalLapDuration + elapsedTime)
+      const currentLap = laps[0] ?? { lapIndex: laps.length + 1 }
+      const updatedLap = { ...currentLap, timeStamp: elapsedTime - totalLapTime }
+      setLaps([
         updatedLap,
-        ...lapState.slice(1)
+        ...laps.slice(1)
       ])
-      console.log("this is current lap state " + lapState)
     }
-  }, [currentTime])
+  }, [elapsedTime])
 
-  function getElapsedTime() {
-    return Date.now() - startTime
-  }
 
-  function startTimer() {
-    setIsActive(true)
-    startTime = Date.now()
-    // startStopTextHandler()
-    // lapResetTextHandler()
-    console.log("this is start timer function " + startTime)
-  }
+  function handleLap() {
+    console.log("Laps clicked")
+    // function createLaps() {
+    //   setIsRunning(true)
+    //   setLaps(prevLapArray => [laps, ...prevLapArray])
+    //   previousTimeStamp = elapsedTime
+    // }
 
-  function stopTimer() {
-    setIsActive(false)
-    stopTime = Date.now()
-    clearInterval(intervalID)
-    console.log("this is stop time " + stopTime)
-    setCurrentTime(currentTime)
-    totalTime += getElapsedTime(stopTime);
-    console.log("the total time is " + getFormattedTime(Date.now() - (totalTime)))
-  }
+    // const addLap = () => {
+    //   const previousLap = {
+    //     ...laps[0] ?? {
+    //       lapIndex: 1
+    //     },
+    //     timeStamp: elapsedTime - totalLapTime
 
-  function resetTimer() {
-    setIsActive(false)
-    setCurrentTime(0)
-    // setTotalLapTime(0)
-    startTime = 0
-    setlapState([])
-    setMinLap({
-      timeStamp: Number.MAX_VALUE,
-      lapIndex: 0
-    })
-    setMaxLap({
-      timeStamp: Number.MIN_VALUE,
-      lapIndex: 0
-    })
-  }
+    //   }
+    //   const newLap = () => {
+    //     lapIndex: laps.length + 1;
+    //     timeStamp: 0
+    //   }
 
-  function laps() {
+    //   setTotalLapTime(totalLapTime - previousLap.timeStamp)
+    //   setLaps([
+    //     newLap,
+    //     previousLap,
+    //     ...laps.slice(1)
+    //   ])
 
-    function createLaps() {
-      setIsActive(true)
-      lapStateObj = {
-        lapIndex: lapState.length + 1,
-        timeStamp: (currentTime - previousTimeStamp)
-      }
-      setLapState(prevLapArray => [lapState, ...prevLapArray])
-      previousTimeStamp = currentTime
-    }
-
-    const addLap = () => {
-      const previousLap = {
-        ...lapStateObj[0] ?? {
-          lapIndex :1 
-        },
-        timeStamp: currentTime - totalLapTime
-
-      }
-      const newLap = () => {
-        lapIndex: lapState.length + 1;
-        timeStamp: 0
-      }
-
-      setTotalLapTime(totalLapTime - previousLap.timeStamp)
-      setLapState([
-        newLap,
-        previousLap,
-        ...lapState.slice(1)
-      ])
-
-      if (previousLap.timeStamp < minLap.timeStamp) {
-        setMinLap(previousLap)
-      }
-      if (previousLap.timeStamp > maxLap.timeStamp) {
-        setMaxLap(previousLap)
-      }
-    }
+    //   if (previousLap.timeStamp < minLap.timeStamp) {
+    //     setMinLap(previousLap)
+    //   }
+    //   if (previousLap.timeStamp > maxLap.timeStamp) {
+    //     setMaxLap(previousLap)
+    //   }
+    // }
 
   }
+
+  const handleStartStop = () => {
+    isRunning ? stopTimer() : startTimer();
+  };
+
+  const startTimer = () => {
+    setIsRunning(true);
+    startTime = Date.now();
+  }
+
+  const stopTimer = () => {
+    setIsRunning(false);
+  }
+
+  const handleLapOrReset = () => {
+    isRunning ? handleLap() : handleReset();
+  };
+
+  const handleReset = () => {
+    setIsRunning(false);
+    setElapsedTime(0);
+    setLaps([]);
+  };
+
   const toggleTimer = () => {
-    console.log("toggle timer clicked. isACTIVE is now " + isActive)
-    setIsActive(!isActive)
-  }
+    setIsRunning(!isRunning);
+  };
 
-  // let primary__buttonClicked = isActive ? startTimer : stopTimer
-  // let secondary__buttonClicked = (isActive && !startTime) ? createLaps : resetTimer
-  let startStopTextHandler = isActive ? STOP_TEXT : START_TEXT
-  let lapResetTextHandler = !isActive && currentTime > 0 ? RESET_TEXT : LAP_TEXT
-  let isButtonDisabled = !isActive && currentTime === 0
+  let lapResetTextHandler = isRunning ? LAP_TEXT : RESET_TEXT;
+  let isButtonDisabled = !isRunning && elapsedTime === 0;
+  let startStopTexthandler = isRunning ? STOP_TEXT : START_TEXT;
+
   return (
     <div className="main__container">
-      <div id='display__timer_container'> {getFormattedTime(currentTime)}</div>
-      <div className='button__container'>
-        <button onClick={isActive ? laps : resetTimer} id="secondary__button" className="button__round" disabled={isButtonDisabled}> {lapResetTextHandler} </button>
-        <button onClick={toggleTimer} id="primary__button" className="button__round primary__button_style green"> {startStopTextHandler} </button>
+      <div id='display__timer_container'> {getFormattedTime(elapsedTime)}</div>
+      <div className="button__container">
+        <button onClick={handleLapOrReset} disabled={isButtonDisabled} id="secondary__button" className="button__round">
+          {lapResetTextHandler}
+        </button>
+        <button onClick={handleStartStop} id="primary__button" className={`button__round primary__button_style ${isRunning ? 'red' : 'green'}`}>
+          {toggleTimer}
+          {startStopTexthandler}
+        </button>
       </div>
       <div id="display__laps_container">
-        <table className="laps__table">
-          <tbody>
-            {lapState.map(lap => {
-              return <tr key={lap.lapIndex} className="table__item-row" >
-                <td className="item__row-index">lap {lap.lapIndex}</td><td className="item__row-timestamp"> {getFormattedTime(lap.timeStamp)}</td>
-              </tr> //using key value pairs call getFormattedTime here
-            })}
-          </tbody>
-        </table>
+        <ul className="laps__table">
+          {laps.map(lap => {
+            return <li key={lap.lapIndex} className="table__item-row" >
+              <span className="item__row-index">Lap {lap.lapIndex}</span><span className="item__row-timestamp"> {getFormattedTime(lap.timeStamp)}</span>
+            </li> 
+          })}
+        </ul>
       </div>
     </div>
   )
