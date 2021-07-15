@@ -125,7 +125,7 @@ function App() {
   let lapResetTextHandler = isRunning ? LAP_TEXT : RESET_TEXT;
   let isButtonDisabled = !isRunning && elapsedTime === 0;
   let startStopTexthandler = isRunning ? STOP_TEXT : START_TEXT;
-
+  let primaryButtonColor = isRunning ? 'red' : 'green'
   return (
     <div className="main__container">
       <div id='display__timer_container'> {getFormattedTime(elapsedTime)}</div>
@@ -133,7 +133,7 @@ function App() {
         <button onClick={handleLapOrReset} disabled={isButtonDisabled} id="secondary__button" className="button__round">
           {lapResetTextHandler}
         </button>
-        <button onClick={handleStartStop} id="primary__button" className={`button__round primary__button_style ${isRunning ? 'red' : 'green'}`}>
+        <button onClick={handleStartStop} id="primary__button" className={`button__round primary__button_style ${primaryButtonColor}`}>
           {toggleTimer}
           {startStopTexthandler}
         </button>
